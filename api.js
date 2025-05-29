@@ -37,61 +37,92 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const TABELAS = ["valores", "produtos", "conferencia", "tradein", "estoque_por_local", "vendedores", "estoque_fisico"]
 
+const emExecucao = new Set();
+
 app.get('/:table', async (req, res) => {
-    try {
-      const table = req.params.table
-      const { USER, PASS } = req.query
-      console.log({ USER, PASS })
+  const table = req.params.table;
 
-      const atokenCommand = [
-        'curl -X GET',
-        'https://self.controlecelular.com.br/api/v1/atoken/index.php',
-        '--header "Accept: application/json"',
-        '--header "Content-Type: application/json"',
-        `--user ${USER}:${PASS}`
-      ].join(' ');
+  if (emExecucao.has(table)) {
+    return res.status(429).json({ error: `A tabela "${table}" já está sendo processada.` });
+  }
 
-      const { stdout: atokenResponse } = await execPromise(atokenCommand);
-      const atokenData = JSON.parse(atokenResponse);
-      console.log({ atokenData });
+  emExecucao.add(table);
 
-      await delay(10000);
+  try {
+    const { USER, PASS } = req.query;
+    console.log({ USER, PASS });
 
-      const rtokenUrl = 'https://self.controlecelular.com.br/api/v1/rtoken';
-      const rtokenResponse = await mountRequest(atokenData.refresh_token, rtokenUrl)
-      const rtokenData = rtokenResponse.access_token;
-      console.log({ rtokenData });
-
-      // const tables = []
-
-      // for (const table of TABELAS) {
-      console.log(table)
-      // try {
-      const recibo = await TABELAS_SOLICITAR[table](rtokenData);
-      console.log({ recibo });
-
-      await delay(60000);
-
-      const resposta = await TABELAS_RESPOSTA[table](recibo, rtokenData);
-      // tables.push({ [table]: resposta })
-      console.log({ resposta });
-      // } catch (error) {
-      //   console.error('Erro entre as tabelas:', error);
-      // }
-      // }
-      res.json({ data: resposta });
-    } catch (error) {
-      console.error('Erro completo:', error);
-      res.status(500).json({
-        error: error.message,
-        stderr: error.stderr
-      });
+    if (!USER || !PASS) {
+      return res.status(400).json({ error: 'Usuário ou senha não informados' });
     }
+
+    const atokenCommand = [
+      'curl -X GET',
+      'https://self.controlecelular.com.br/api/v1/atoken/index.php',
+      '--header "Accept: application/json"',
+      '--header "Content-Type: application/json"',
+      `--user ${USER}:${PASS}`
+    ].join(' ');
+
+    const { stdout: atokenResponse } = await execPromise(atokenCommand);
+    const atokenData = JSON.parse(atokenResponse);
+    console.log({ atokenData });
+
+    await delay(10000);
+
+    const rtokenUrl = 'https://self.controlecelular.com.br/api/v1/rtoken';
+    const rtokenResponse = await mountRequest(atokenData.refresh_token, rtokenUrl);
+    const rtokenData = rtokenResponse.access_token;
+    console.log({ rtokenData });
+
+    const recibo = await TABELAS_SOLICITAR[table](rtokenData);
+    console.log({ recibo });
+
+    await delay(60000);
+
+    const resposta = await TABELAS_RESPOSTA[table](recibo, rtokenData);
+
+    console.log({ resposta });
+
+    if (resposta.head) {
+      const tableFormated = formatTable(resposta)
+      console.log({ tableFormated });
+
+      res.json({ data: tableFormated });
+    }
+
+    res.json({ data: resposta });
+
+  } catch (error) {
+    console.error('Erro completo:', error);
+    res.status(500).json({
+      error: error.message,
+      stderr: error.stderr
+    });
+  } finally {
+    emExecucao.delete(table);
+  }
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
+
+function formatTable(table) {
+  const head = Object.entries(table.head[0]).map(([column, value]) => ({ column, label: value.label }))
+
+  const body = table.body.map(i => i.reduce((acc, item, idx) => {
+    acc[head[idx].column] = item
+
+    return acc
+  }, {}))
+
+  return {
+    ...table,
+    head,
+    body
+  }
+}
 
 async function mountRequest(accessToken, url) {
   const headers = [
