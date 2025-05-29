@@ -1,8 +1,8 @@
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
-import express from 'express';
+const { exec, spawn } = require('child_process');
+const util = require('util');
+const express = require("express");
 
-const execPromise = promisify(exec);
+const execPromise = util.promisify(exec);
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -120,13 +120,13 @@ async function mountRequest(accessToken, url) {
 
 // detalhado_produto ------------------------------------------------------------------ 
 
-export async function getDetalhadoProdutoResposta(recibo, accessToken) {
+async function getDetalhadoProdutoResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/atendimentos/detalhado_produto/&recibo=${recibo}`;
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getDetalhadoProdutoSolicitar(accessToken) {
+async function getDetalhadoProdutoSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/atendimentos/detalhado_produto/&com=gerarRelatorio&data_ini=${trintaDiasAtras}&data_fin=${new Date().toISOString().split('T')[0]}`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -135,13 +135,13 @@ export async function getDetalhadoProdutoSolicitar(accessToken) {
 
 // valores_a_receber ------------------------------------------------------------------
 
-export async function getValoresAReceberResposta(recibo, accessToken) {
+async function getValoresAReceberResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/operadora/valores_a_receber/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getValoresAReceberSolicitar(accessToken) {
+async function getValoresAReceberSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/operadora/valores_a_receber&com=gerarRelatorio&data_ini=${trintaDiasAtras}&data_fin=${today}`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -150,13 +150,13 @@ export async function getValoresAReceberSolicitar(accessToken) {
 
 // conferencia ------------------------------------------------------------------
 
-export async function getConferenciaResposta(recibo, accessToken) {
+async function getConferenciaResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/atendimentos/conferencia/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getConferenciaSolicitar(accessToken) {
+async function getConferenciaSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/atendimentos/conferencia/&com=gerarRelatorio&data_ini=${trintaDiasAtras}&data_fin=${today}`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -165,13 +165,13 @@ export async function getConferenciaSolicitar(accessToken) {
 
 // trade_in ------------------------------------------------------------------
 
-export async function getTradeinResposta(recibo, accessToken) {
+async function getTradeinResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/utilitarios/trade_in/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getTradeinSolicitar(accessToken) {
+async function getTradeinSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/utilitarios/trade_in/&com=gerarRelatorio&data_ini=${trintaDiasAtras}&data_fin=${today}`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -180,13 +180,13 @@ export async function getTradeinSolicitar(accessToken) {
 
 // vendedores ------------------------------------------------------------------
 
-export async function getVendedoresResposta(recibo, accessToken) {
+async function getVendedoresResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/vendedores/cadastro/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getVendedoresSolicitar(accessToken) {
+async function getVendedoresSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/vendedores/cadastro&com=gerarRelatorio`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -195,13 +195,13 @@ export async function getVendedoresSolicitar(accessToken) {
 
 // estoque_por_local ------------------------------------------------------------------
 
-export async function getEstoquePorLocalResposta(recibo, accessToken) {
+async function getEstoquePorLocalResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/produtos/estoque_por_local/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getEstoquePorLocalSolicitar(accessToken) {
+async function getEstoquePorLocalSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/produtos/estoque_por_local/&com=gerarRelatorio`
 
   const reciboData = await mountRequest(accessToken, url)
@@ -210,13 +210,13 @@ export async function getEstoquePorLocalSolicitar(accessToken) {
 
 // estoque_fisico ------------------------------------------------------------------
 
-export async function getEstoqueFisicoResposta(recibo, accessToken) {
+async function getEstoqueFisicoResposta(recibo, accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios?idRelat=integracao/produtos/estoque_fisico/&recibo=${recibo}`
 
   return await mountRequest(accessToken, url)
 }
 
-export async function getEstoqueFisicoSolicitar(accessToken) {
+async function getEstoqueFisicoSolicitar(accessToken) {
   const url = `https://self.controlecelular.com.br/api/v1/relatorios/?idRelat=integracao/produtos/estoque_fisico/&com=gerarRelatorio`
 
   const reciboData = await mountRequest(accessToken, url)
