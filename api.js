@@ -78,21 +78,29 @@ app.get('/:table', async (req, res) => {
     const recibo = await TABELAS_SOLICITAR[table](rtokenData);
     console.log({ recibo });
 
-    await delay(60000);
 
-    const resposta = await TABELAS_RESPOSTA[table](recibo, rtokenData);
+    for (const i of [1, 2, 3]) {
+      console.log(i)
 
-    console.log({ resposta });
+      await delay(10000);
 
-    if (resposta.head) {
-      const tableFormated = formatTable(resposta)
-      console.log({ tableFormated });
+      const resposta = await TABELAS_RESPOSTA[table](recibo, rtokenData);
 
-      res.json({ data: tableFormated });
+      console.log({ resposta });
+
+      if (!resposta.error) {
+        if (resposta.head) {
+          const tableFormated = formatTable(resposta)
+          console.log({ tableFormated });
+
+          res.json({ data: tableFormated });
+        }
+
+        res.json({ data: resposta });
+      }
     }
 
-    res.json({ data: resposta });
-
+    res.json({ error: 1 });
   } catch (error) {
     console.error('Erro completo:', error);
     res.status(500).json({
