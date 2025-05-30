@@ -82,21 +82,19 @@ app.get('/:table', async (req, res) => {
     for (const i of [1, 2, 3]) {
       console.log(i)
 
-      await delay(10000);
+      await delay(30000);
 
       const resposta = await TABELAS_RESPOSTA[table](recibo, rtokenData);
 
       console.log({ resposta });
 
-      if (!resposta.error) {
-        if (resposta.head) {
-          const tableFormated = formatTable(resposta)
-          console.log({ tableFormated });
+      if (resposta.head) {
+        const tableFormated = formatTable(resposta)
+        console.log({ tableFormated });
 
-          res.json({ data: tableFormated });
-        }
+        res.json({ data: tableFormated });
 
-        res.json({ data: resposta });
+        break;
       }
     }
 
